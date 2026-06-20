@@ -450,7 +450,7 @@
 
     <!-- STEP 1: question - Dota hero -->
     <div class="step" data-step="1">
-      <div class="q-title">Вопрос 1 / 6 — твой фирменный герой в Доте. Каким героем ты затыкаешь рот всей вражеской команде?</div>
+      <div class="q-title">Вопрос 1 / 5 — твой фирменный герой в Доте. Каким героем ты затыкаешь рот всей вражеской команде?</div>
       <div class="options" id="opts1">
         <button class="opt" onclick="answerQ1(true)"><span class="letter">A</span> Shadow Fiend, очевидно</button>
         <button class="opt" onclick="answerQ1(false)"><span class="letter">B</span> Pudge, хук — это искусство</button>
@@ -474,7 +474,7 @@
 
     <!-- STEP 3: captcha -->
     <div class="step" data-step="3">
-      <div class="q-title">Вопрос 3 / 6 — капча. Выбери всё, что сейчас в твоей жизни (а не пять лет назад).</div>
+      <div class="q-title">Вопрос 3 / 5 — капча. Выбери всё, что сейчас в твоей жизни (а не пять лет назад).</div>
       <div class="captcha-box">
         <div class="captcha-grid" id="captchaGrid">
           <div class="tile" data-good="false" data-label="бритая голова и бомбер">🪖</div>
@@ -491,7 +491,7 @@
 
     <!-- STEP 4: slider verification -->
     <div class="step" data-step="4">
-      <div class="q-title">Вопрос 4 / 6 — последняя проверка на реакцию. Затяни Shadow Fiend'а до фулл-стака душ.</div>
+      <div class="q-title">Вопрос 4 / 5 — последняя проверка на реакцию. Затяни Shadow Fiend'а до фулл-стака душ.</div>
       <div class="slider-track" id="sliderTrack">
         <div class="slider-fill" id="sliderFill"></div>
         <div class="slider-label" id="sliderLabel">Тяни душу вправо →</div>
@@ -502,7 +502,7 @@
 
     <!-- STEP 5: knowledge check -->
     <div class="step" data-step="5">
-      <div class="q-title">Вопрос 5 / 6 - сколько лет исполняется человеку, личность которого мы проверяем?</div>
+      <div class="q-title">Вопрос 5 / 5 — сколько лет исполняется человеку, личность которого мы проверяем?</div>
       <div class="options" id="opts5">
         <button class="opt" onclick="answer(5,false)"><span class="letter">A</span> 17, ещё пацан</button>
         <button class="opt" onclick="answer(5,true)"><span class="letter">B</span> 22?</button>
@@ -548,7 +548,7 @@
 </div>
 
 <script>
-  const TOTAL_STEPS = 6; // counting questions 1-5 plus car-pick(6); intro(0) and finale(7) excluded
+  const TOTAL_STEPS = 5; // counting questions 1-5 plus car-pick(6); intro(0) and finale(7) excluded
   let currentStep = 0;
 
   function buildProgress(){
