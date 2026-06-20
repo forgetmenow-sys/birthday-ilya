@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Проверка личности: Илья</title>
+<style>
+  :root{
+    --void: #0a0612;
+    --void-2: #150c24;
+    --soul-purple: #6b21d8;
+    --soul-purple-bright: #9747ff;
+    --fiend-red: #c81e3a;
+    --fiend-red-bright: #ff3355;
+    --ember: #ff7a45;
+    --bone: #e8e2f0;
+    --bone-dim: #9b91ad;
+    --line: rgba(151, 71, 255, 0.25);
+    --display: 'Cinzel', 'Georgia', serif;
+    --body: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  body{
+    background: radial-gradient(ellipse at 50% 0%, var(--void-2) 0%, var(--void) 55%);
+    min-height: 100vh;
+    font-family: var(--body);
+    color: var(--bone);
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Floating embers / souls in background */
+  .soul{
+    position: fixed;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--soul-purple-bright);
+    box-shadow: 0 0 8px 2px var(--soul-purple-bright);
+    opacity: 0;
+    pointer-events: none;
+    animation: rise linear infinite;
+    z-index: 0;
+  }
+  @keyframes rise{
+    0%{ transform: translateY(0) translateX(0); opacity: 0; }
+    10%{ opacity: 0.8; }
+    90%{ opacity: 0.4; }
+    100%{ transform: translateY(-100vh) translateX(20px); opacity: 0; }
+  }
+
+  .stage{
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .card{
+    width: 100%;
+    max-width: 560px;
+    background: linear-gradient(160deg, rgba(21,12,36,0.92), rgba(10,6,18,0.96));
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px rgba(151,71,255,0.08), 0 30px 80px -20px rgba(107,33,216,0.4), 0 0 60px -10px rgba(200,30,58,0.15);
+    padding: 40px 36px;
+    position: relative;
+    animation: cardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes cardIn{
+    from{ opacity: 0; transform: translateY(16px) scale(0.98); }
+    to{ opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .card::before{
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px; right: -1px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--fiend-red-bright), var(--soul-purple-bright), transparent);
+  }
+
+  .eyebrow{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fiend-red-bright);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .eyebrow .dot{
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--fiend-red-bright);
+    box-shadow: 0 0 8px var(--fiend-red-bright);
+    animation: blink 1.6s ease-in-out infinite;
+  }
+  @keyframes blink{ 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+  h1{
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--bone);
+    margin-bottom: 12px;
+    letter-spacing: 0.01em;
+  }
+  h1 span{ color: var(--soul-purple-bright); }
+
+  .sub{
+    color: var(--bone-dim);
+    font-size: 15px;
+    line-height: 1.55;
+    margin-bottom: 28px;
+  }
+
+  .progress-track{
+    display: flex;
+    gap: 6px;
+    margin-bottom: 28px;
+  }
+  .progress-seg{
+    flex: 1;
+    height: 3px;
+    background: rgba(151,71,255,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-seg.done{ background: var(--soul-purple-bright); box-shadow: 0 0 6px var(--soul-purple-bright); }
+  .progress-seg.active::after{
+    content:'';
+    position:absolute; inset:0;
+    background: var(--fiend-red-bright);
+    animation: fillSeg 0.4s ease forwards;
+  }
+  @keyframes fillSeg{ from{width:0%} to{width:100%} }
+
+  .step{ display:none; }
+  .step.visible{ display:block; animation: stepIn 0.45s cubic-bezier(0.16,1,0.3,1); }
+  @keyframes stepIn{ from{opacity:0; transform: translateX(8px);} to{opacity:1; transform:translateX(0);} }
+
+  .q-title{
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--bone);
+    margin-bottom: 18px;
+    line-height: 1.4;
+  }
+
+  .options{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .opt{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(151,71,255,0.05);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14.5px;
+    color: var(--bone);
+    transition: all 0.18s ease;
+    text-align: left;
+    font-family: var(--body);
+  }
+  .opt:hover{
+    background: rgba(151,71,255,0.12);
+    border-color: var(--soul-purple-bright);
+    transform: translateX(2px);
+  }
+  .opt:active{ transform: translateX(2px) scale(0.99); }
+  .opt .letter{
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--soul-purple-bright);
+    width: 18px;
+    flex-shrink: 0;
+  }
+
+  .feedback{
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ember);
+    margin-top: 14px;
+    min-height: 16px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .feedback.show{ opacity: 1; }
+
+  /* Captcha tile grid */
+  .captcha-box{
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 16px;
+    background: rgba(0,0,0,0.25);
+    margin-bottom: 8px;
+  }
+  .captcha-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .tile{
+    aspect-ratio: 1;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    background: rgba(151,71,255,0.04);
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .tile:hover{ background: rgba(151,71,255,0.15); border-color: var(--soul-purple-bright); }
+  .tile.picked{ background: rgba(200,30,58,0.25); border-color: var(--fiend-red-bright); }
+
+  .next-btn{
+    width: 100%;
+    margin-top: 18px;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid var(--soul-purple-bright);
+    color: var(--soul-purple-bright);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .next-btn.ready{ opacity: 1; pointer-events: all; }
+  .next-btn.ready:hover{ background: var(--soul-purple-bright); color: var(--void); box-shadow: 0 0 24px -4px var(--soul-purple-bright); }
+
+  /* Slider verification */
+  .slider-track{
+    position: relative;
+    height: 48px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    margin-top: 14px;
+    overflow: hidden;
+  }
+  .slider-fill{
+    position: absolute;
+    top:0; left:0; height:100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--fiend-red), var(--soul-purple));
+    transition: width 0.05s linear;
+  }
+  .slider-handle{
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 42px; height: 42px;
+    background: var(--bone);
+    border-radius: 2px;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 18px;
+    cursor: grab;
+    box-shadow: 0 0 16px rgba(151,71,255,0.5);
+    transition: left 0.05s linear;
+    z-index: 2;
+  }
+  .slider-handle:active{ cursor: grabbing; }
+  .slider-label{
+    position: absolute;
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--bone-dim);
+    pointer-events: none;
+  }
+
+  /* Final reveal */
+  .finale{ text-align: center; }
+  .finale .eyebrow{ justify-content: center; color: var(--ember); }
+  .finale h1{ font-size: 30px; margin-bottom: 6px; }
+  .finale .verified-tag{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--soul-purple-bright);
+    border: 1px solid var(--soul-purple-bright);
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin: 0 auto 24px;
+    background: rgba(151,71,255,0.08);
+  }
+  .message{
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--bone);
+    text-align: left;
+    background: rgba(0,0,0,0.2);
+    border-left: 2px solid var(--fiend-red-bright);
+    padding: 20px 22px;
+    border-radius: 0 4px 4px 0;
+    margin: 24px 0;
+  }
+  .message p{ margin-bottom: 12px; }
+  .message p:last-child{ margin-bottom: 0; }
+  .signoff{
+    font-family: var(--display);
+    color: var(--ember);
+    font-size: 17px;
+    margin-top: 4px;
+  }
+
+  .confetti{
+    position: fixed;
+    top: -20px;
+    width: 8px; height: 14px;
+    z-index: 50;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform: translateY(110vh) rotate(720deg); opacity: 0.3; }
+  }
+
+  .gallery-title{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bone-dim);
+    margin: 28px 0 14px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .gallery-title::before, .gallery-title::after{
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .gallery-counter{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--soul-purple-bright);
+    text-align: right;
+    margin-bottom: 10px;
+  }
+  .gallery{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .gallery-tile{
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .gallery-tile img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+  .gallery-tile:hover img{ transform: scale(1.04); }
+  .gallery-tile.selected{
+    border-color: var(--fiend-red-bright);
+    box-shadow: 0 0 0 1px var(--fiend-red-bright), 0 0 16px -2px var(--fiend-red-bright);
+  }
+  .gallery-tile.selected img{ filter: brightness(0.7) saturate(1.2); }
+  .gallery-check{
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.6);
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: transparent;
+    transition: all 0.15s ease;
+  }
+  .gallery-tile.selected .gallery-check{
+    background: var(--fiend-red-bright);
+    border-color: var(--fiend-red-bright);
+    color: var(--void);
+  }
+
+  @media (max-width: 480px){
+    .card{ padding: 28px 22px; }
+    h1{ font-size: 23px; }
+    .captcha-grid{ grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="card" id="card">
+
+    <!-- progress -->
+    <div class="progress-track" id="progressTrack"></div>
+
+    <!-- STEP 0: intro -->
+    <div class="step visible" data-step="0">
+      <div class="eyebrow"><span class="dot"></span>ПРОВЕРКА ЛИЧНОСТИ</div>
+      <h1>Так. Кто-то пытается войти как <span>Илья</span>.</h1>
+      <div class="sub">Прежде чем пропустить тебя дальше, система должна убедиться, что ты — это действительно ты. Несколько вопросов и один тест на реакцию. Никаких данных никуда не уходит, расслабься, мидер.</div>
+      <button class="next-btn ready" onclick="goTo(1)">НАЧАТЬ ПРОВЕРКУ →</button>
+    </div>
+
+    <!-- STEP 1: question - Dota hero -->
+    <div class="step" data-step="1">
+      <div class="q-title">Вопрос 1 / 5 — твой фирменный герой в Доте. Каким героем ты затыкаешь рот всей вражеской команде?</div>
+      <div class="options" id="opts1">
+        <button class="opt" onclick="answerQ1(true)"><span class="letter">A</span> Shadow Fiend, очевидно</button>
+        <button class="opt" onclick="answerQ1(false)"><span class="letter">B</span> Pudge, хук — это искусство</button>
+        <button class="opt" onclick="answerQ1(false)"><span class="letter">C</span> Я на саппорте, мне норм</button>
+        <button class="opt" onclick="answerQ1(false)"><span class="letter">D</span> Какая дота, я в шахматы играю</button>
+      </div>
+      <div class="feedback" id="fb1"></div>
+    </div>
+
+    <!-- STEP 2: question - best friend -->
+    <div class="step" data-step="2">
+      <div class="q-title">Вопрос 2 / 5 — с кем настоящий Илья проводит подозрительно много времени?</div>
+      <div class="options" id="opts2">
+        <button class="opt" onclick="answerQ2(false)"><span class="letter">A</span> Сам с собой, я одиночка</button>
+        <button class="opt" onclick="answerQ2(true)"><span class="letter">B</span> С Ваньком, и хватит вопросов</button>
+        <button class="opt" onclick="answerQ2(false)"><span class="letter">C</span> С соседской кошкой</button>
+        <button class="opt" onclick="answerQ2(false)"><span class="letter">D</span> С тренером по фитнесу</button>
+      </div>
+      <div class="feedback" id="fb2"></div>
+    </div>
+
+    <!-- STEP 3: captcha -->
+    <div class="step" data-step="3">
+      <div class="q-title">Вопрос 3 / 5 — капча. Выбери всё, что сейчас в твоей жизни (а не пять лет назад).</div>
+      <div class="captcha-box">
+        <div class="captcha-grid" id="captchaGrid">
+          <div class="tile" data-good="false" data-label="бритая голова и бомбер">🪖</div>
+          <div class="tile" data-good="true" data-label="стабильная работа">💼</div>
+          <div class="tile" data-good="true" data-label="откладывает на машину">🚗</div>
+          <div class="tile" data-good="false" data-label="драки во дворе">👊</div>
+          <div class="tile" data-good="true" data-label="играет Shadow Fiend">💀</div>
+          <div class="tile" data-good="true" data-label="любит свою страну, без перегибов">🇷🇺</div>
+        </div>
+      </div>
+      <div class="feedback" id="fb3"></div>
+      <button class="next-btn" id="nextBtn3" onclick="goTo(4)">ПОДТВЕРДИТЬ ВЫБОР →</button>
+    </div>
+
+    <!-- STEP 4: slider verification -->
+    <div class="step" data-step="4">
+      <div class="q-title">Вопрос 4 / 5 — последняя проверка на реакцию. Затяни Shadow Fiend'а до фулл-стака душ.</div>
+      <div class="slider-track" id="sliderTrack">
+        <div class="slider-fill" id="sliderFill"></div>
+        <div class="slider-label" id="sliderLabel">Тяни душу вправо →</div>
+        <div class="slider-handle" id="sliderHandle">💀</div>
+      </div>
+      <div class="feedback" id="fb4"></div>
+    </div>
+
+    <!-- STEP 5: knowledge check -->
+    <div class="step" data-step="5">
+      <div class="q-title">Вопрос 5 / 6 - сколько лет исполняется человеку, личность которого мы проверяем?</div>
+      <div class="options" id="opts5">
+        <button class="opt" onclick="answer(5,false)"><span class="letter">A</span> 17, ещё пацан</button>
+        <button class="opt" onclick="answer(5,true)"><span class="letter">B</span> 22?</button>
+        <button class="opt" onclick="answer(5,false)"><span class="letter">C</span> 69 - число имба</button>
+        <button class="opt" onclick="answer(5,false)"><span class="letter">D</span> Не считаю, возраст — число</button>
+      </div>
+      <div class="feedback" id="fb5"></div>
+    </div>
+
+    <!-- STEP 6: car selection -->
+    <div class="step" data-step="6">
+      <div class="q-title">Последнее. Систему заклинило — данных о том, слишком много тестостерона..., она не может выбрать одну характеристику. Выбери фото машины, любую, и поедем дальше — это всё равно не передаст и десятой доли того, насколько он крут.</div>
+      <div class="gallery-counter" id="galleryCounter">выбрано 0/9</div>
+      <div class="gallery" id="photoGallery">
+        <div class="gallery-tile" onclick="toggleGalleryTile(this)"><img src="photo/1.jpg" alt=""><div class="gallery-check">✓</div></div>
+        <div class="gallery-tile" onclick="toggleGalleryTile(this)"><img src="photo/2.jpg" alt=""><div class="gallery-check">✓</div></div>
+        <div class="gallery-tile" onclick="toggleGalleryTile(this)"><img src="photo/3.jpg" alt=""><div class="gallery-check">✓</div></div>
+        <div class="gallery-tile" onclick="toggleGalleryTile(this)"><img src="photo/4.jpg" alt=""><div class="gallery-check">✓</div></div>
+        <div class="gallery-tile" onclick="toggleGalleryTile(this)"><img src="photo/5.jpg" alt=""><div class="gallery-check">✓</div></div>
+        <div class="gallery-tile" onclick="toggleGalleryTile(this)"><img src="photo/6.jpg" alt=""><div class="gallery-check">✓</div></div>
+        <div class="gallery-tile" onclick="toggleGalleryTile(this)"><img src="photo/7.jpg" alt=""><div class="gallery-check">✓</div></div>
+        <div class="gallery-tile" onclick="toggleGalleryTile(this)"><img src="photo/8.jpg" alt=""><div class="gallery-check">✓</div></div>
+        <div class="gallery-tile" onclick="toggleGalleryTile(this)"><img src="photo/9.jpg" alt=""><div class="gallery-check">✓</div></div>
+      </div>
+      <div class="feedback" id="fb6"></div>
+      <button class="next-btn ready" id="nextBtn6" onclick="tryProceedFromGallery()" style="margin-top:18px;">ВСЁ, ХВАТИТ МЕЧТАТЬ →</button>
+    </div>
+
+    <!-- FINAL: reveal -->
+    <div class="step finale" data-step="7">
+      <div class="eyebrow"><span class="dot"></span>ДОСТУП РАЗРЕШЁН</div>
+      <div class="verified-tag">✓ ЛИЧНОСТЬ ПОДТВЕРЖДЕНА: ИЛЬЯ</div>
+      <h1>С днём рождения, дорогой Илюша! ❤️</h1>
+      <div class="message">
+        <p>Хочу пожелать тебе самого главного — быть счастливым. Пусть каждый твой день приносит радость, вдохновение и новые возможности. Желаю тебе крепкого здоровья, сил для достижения всех целей и уверенности в себе, ведь ты способен на очень многое.</p>
+        <p>Спасибо тебе за заботу, поддержку, доброту и все счастливые моменты, которые мы разделяем вместе. Ты делаешь мою жизнь ярче и теплее просто тем, что есть рядом. Я очень ценю тебя и искренне рада, что ты есть в моей жизни.</p>
+        <p>Пусть сбываются твои мечты, рядом всегда будут любимые люди, а в сердце живут гармония и счастье. Оставайся таким же замечательным, сильным, добрым и любимым человеком.</p>
+      </div>
+      <div class="signoff">С днём рождения, мой дорогой! Люблю тебя и желаю тебе самого лучшего. ❤️🎉</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const TOTAL_STEPS = 6; // counting questions 1-5 plus car-pick(6); intro(0) and finale(7) excluded
+  let currentStep = 0;
+
+  function buildProgress(){
+    const track = document.getElementById('progressTrack');
+    track.innerHTML = '';
+    for(let i=1;i<=TOTAL_STEPS;i++){
+      const seg = document.createElement('div');
+      seg.className = 'progress-seg';
+      seg.id = 'seg'+i;
+      track.appendChild(seg);
+    }
+  }
+  buildProgress();
+
+  function updateProgress(step){
+    for(let i=1;i<=TOTAL_STEPS;i++){
+      const seg = document.getElementById('seg'+i);
+      seg.classList.remove('done','active');
+      if(i < step) seg.classList.add('done');
+      if(i === step) seg.classList.add('active');
+    }
+  }
+
+  function goTo(step){
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('visible'));
+    const target = document.querySelector('.step[data-step="'+step+'"]');
+    target.classList.add('visible');
+    currentStep = step;
+    if(step >= 1 && step <= TOTAL_STEPS) updateProgress(step);
+    if(step === 7) launchConfetti();
+  }
+
+  const teases = [
+    "Принято. Хотя Пудж тоже неплох, чисто для души.",
+    "Логично. Ваньку привет.",
+    "Окей, лезем дальше.",
+  ];
+
+  const teaseWrongQ1 = [
+    "Хмм... что-то здесь не так. Перепроверь.",
+    "Система зависла от удивления. Попробуй ещё раз.",
+    "Нет-нет, тут явно подвох. Сосредоточься.",
+    "Это не похоже на правду. Давай по-новой.",
+  ];
+
+  function answerQ1(correct){
+    const fb = document.getElementById('fb1');
+    if(correct){
+      fb.textContent = "✓ Конечно. Кто бы сомневался.";
+      fb.classList.add('show');
+      setTimeout(() => goTo(2), 850);
+    } else {
+      fb.textContent = teaseWrongQ1[Math.floor(Math.random()*teaseWrongQ1.length)];
+      fb.classList.add('show');
+    }
+  }
+
+  const teaseWrongQ2 = [
+    "Не, это точно не он. Подумай ещё.",
+    "Система чувствует ложь за километр. Снова.",
+    "Ой, кажется, ты что-то скрываешь.",
+    "Не сходится. Ванёк бы обиделся.",
+  ];
+
+  function answerQ2(correct){
+    const fb = document.getElementById('fb2');
+    if(correct){
+      fb.textContent = "✓ Логично. Ваньку привет.";
+      fb.classList.add('show');
+      setTimeout(() => goTo(3), 850);
+    } else {
+      fb.textContent = teaseWrongQ2[Math.floor(Math.random()*teaseWrongQ2.length)];
+      fb.classList.add('show');
+    }
+  }
+
+  function answer(step, correct){
+    const fb = document.getElementById('fb'+step);
+    if(correct){
+      fb.textContent = "✓ " + (teases[Math.floor(Math.random()*teases.length)]);
+    } else {
+      fb.textContent = "Хм, система зафиксировала странный ответ. Но ладно, идём дальше.";
+    }
+    fb.classList.add('show');
+    setTimeout(() => goTo(step+1), 850);
+  }
+
+  // Captcha logic
+  const captchaSelected = new Set();
+  document.querySelectorAll('#captchaGrid .tile').forEach((tile, idx) => {
+    tile.addEventListener('click', () => {
+      tile.classList.toggle('picked');
+      if(tile.classList.contains('picked')) captchaSelected.add(idx);
+      else captchaSelected.delete(idx);
+      checkCaptcha();
+    });
+  });
+  function checkCaptcha(){
+    const fb = document.getElementById('fb3');
+    const btn = document.getElementById('nextBtn3');
+    if(captchaSelected.size > 0){
+      fb.textContent = "Выбрано пунктов: " + captchaSelected.size + ". Жми «подтвердить», когда определился.";
+      fb.classList.add('show');
+      btn.classList.add('ready');
+    } else {
+      fb.classList.remove('show');
+      btn.classList.remove('ready');
+    }
+  }
+
+  // Slider logic
+  const handle = document.getElementById('sliderHandle');
+  const track = document.getElementById('sliderTrack');
+  const fill = document.getElementById('sliderFill');
+  const label = document.getElementById('sliderLabel');
+  let dragging = false;
+  let sliderDone = false;
+
+  function setHandlePos(x){
+    const trackRect = track.getBoundingClientRect();
+    const maxX = trackRect.width - 48;
+    let pos = Math.max(3, Math.min(x, maxX));
+    handle.style.left = pos + 'px';
+    const pct = (pos / maxX) * 100;
+    fill.style.width = pct + '%';
+    if(pct > 92 && !sliderDone){
+      sliderDone = true;
+      label.textContent = "ПОДТВЕРЖДЕНО ✓";
+      handle.textContent = "✓";
+      handle.style.boxShadow = "0 0 24px var(--fiend-red-bright)";
+      document.getElementById('fb4').textContent = "Реакция как у мидера. Финальный вопрос ждёт.";
+      document.getElementById('fb4').classList.add('show');
+      setTimeout(() => goTo(5), 900);
+    }
+  }
+
+  function startDrag(e){
+    dragging = true;
+  }
+  function moveDrag(e){
+    if(!dragging || sliderDone) return;
+    const trackRect = track.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    setHandlePos(clientX - trackRect.left - 21);
+  }
+  function endDrag(){ dragging = false; }
+
+  handle.addEventListener('mousedown', startDrag);
+  handle.addEventListener('touchstart', startDrag, {passive:true});
+  window.addEventListener('mousemove', moveDrag);
+  window.addEventListener('touchmove', moveDrag, {passive:true});
+  window.addEventListener('mouseup', endDrag);
+  window.addEventListener('touchend', endDrag);
+
+  // Ambient floating souls
+  function spawnSoul(){
+    const soul = document.createElement('div');
+    soul.className = 'soul';
+    soul.style.left = Math.random()*100 + 'vw';
+    soul.style.animationDuration = (6 + Math.random()*6) + 's';
+    soul.style.opacity = 0;
+    document.body.appendChild(soul);
+    setTimeout(() => soul.remove(), 13000);
+  }
+  setInterval(spawnSoul, 700);
+  for(let i=0;i<6;i++) setTimeout(spawnSoul, i*300);
+
+  // Gallery selection logic
+  const galleryTotal = 9;
+  const teaseIncomplete = [
+    "Ой... по-моему, ты выбрал не всё.",
+    "Хм, кажется не все тачки оценены по достоинству.",
+    "Погоди-ка, там ещё фото остались без внимания.",
+  ];
+  function toggleGalleryTile(tile){
+    tile.classList.toggle('selected');
+    const selectedCount = document.querySelectorAll('#photoGallery .gallery-tile.selected').length;
+    document.getElementById('galleryCounter').textContent = 'выбрано ' + selectedCount + '/' + galleryTotal;
+  }
+  function tryProceedFromGallery(){
+    const selectedCount = document.querySelectorAll('#photoGallery .gallery-tile.selected').length;
+    const fb = document.getElementById('fb6');
+    if(selectedCount < galleryTotal){
+      fb.textContent = teaseIncomplete[Math.floor(Math.random()*teaseIncomplete.length)];
+      fb.classList.add('show');
+      return;
+    }
+    goTo(7);
+  }
+
+  // Confetti on finale
+  function launchConfetti(){
+    const colors = ['#9747ff','#ff3355','#ff7a45','#e8e2f0','#6b21d8'];
+    for(let i=0;i<90;i++){
+      setTimeout(() => {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random()*100 + 'vw';
+        c.style.background = colors[Math.floor(Math.random()*colors.length)];
+        c.style.animationDuration = (2.5 + Math.random()*2) + 's';
+        c.style.transform = 'rotate(' + (Math.random()*360) + 'deg)';
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 5000);
+      }, i*30);
+    }
+  }
+</script>
+
+</body>
+</html>
